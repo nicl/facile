@@ -1,5 +1,13 @@
 package net.room271
 
+import akka.actor.{Props, ActorSystem}
+import akka.io.{IO, Tcp}
+
 object Facile extends App {
-  println("Gandalf say eh-oh! Oh wait, no, that's the telly tubbies.")
+
+  val system = ActorSystem("facile-service")
+  val manager = IO(Tcp)
+  val handler = system.actorOf(Props[Handler])
+
+  val server = system.actorOf(Server.props(handler))
 }
