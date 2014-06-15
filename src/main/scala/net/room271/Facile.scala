@@ -1,13 +1,16 @@
 package net.room271
 
 import akka.actor.{Props, ActorSystem}
-import akka.io.{IO, Tcp}
+import com.typesafe.config.ConfigFactory
 
 object Facile extends App {
 
-  val system = ActorSystem("facile-service")
-  val manager = IO(Tcp)
-  val handler = system.actorOf(Props[Handler])
+  val config = ConfigFactory.load()
+  val system = ActorSystem("facile-service", config)
 
-  val server = system.actorOf(Server.props(handler))
+  val handler = system.actorOf(Props[Handler])
+  system.actorOf(Server.props(handler))
+
+  readLine(s"Hit ENTER to exit ...${System.getProperty("line.separator")}")
+  system.shutdown()
 }

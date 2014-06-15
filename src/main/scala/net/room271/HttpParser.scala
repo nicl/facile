@@ -6,7 +6,6 @@ import java.security.cert.X509Certificate
 object HttpParser {
 
   def parse(input: InputStream): Request = ???
-
 }
 
 
