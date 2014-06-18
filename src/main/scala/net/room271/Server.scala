@@ -5,6 +5,11 @@ import akka.io.{IO, Tcp}
 import java.net.InetSocketAddress
 import Tcp._
 
+object Server {
+
+  def props(handler: ActorRef): Props = Props(new Server(handler))
+}
+
 class Server(handler: ActorRef) extends Actor with ActorLogging {
 
   import context.system
@@ -25,9 +30,4 @@ class Server(handler: ActorRef) extends Actor with ActorLogging {
       val connection = sender()
       connection ! Register(handler)
   }
-}
-
-object Server {
-
-  def props(handler: ActorRef): Props = Props(new Server(handler))
 }

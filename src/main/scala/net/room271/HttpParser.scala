@@ -2,10 +2,11 @@ package net.room271
 
 import akka.util.ByteString
 import scala.util.parsing.combinator.RegexParsers
+import java.io.InputStreamReader
 
 object HttpParser extends RegexParsers {
 
-  val stringLiteral = (s"[^$CRLF]").r
+  val stringLiteral = s"[^$CRLF]".r
   val nonSpaceString = "[^ ]*".r
   val CRLF = "\r\n"
 
@@ -18,22 +19,23 @@ object HttpParser extends RegexParsers {
   //   Accept: */*
   //
   // Generally CRLF (escaped in Scala as: '\r\n') is used to separate parts
-  def parse(input: ByteString): Request = {
-    input.to
-
-
-    ???
+  def parse(input: ByteString): ParseResult[Request] = {
+    parse(request, new InputStreamReader(input.iterator.asInputStream))
   }
 
-  def request: Parser[Request] = requestLine ~ CRLF ~ opt(headers) ~ CRLF ~ opt(body)
+  def request: Parser[Request] = requestLine ~ opt(headers) ~ CRLF ~ opt(body) ^^ {
+    case r ~ h ~ _ ~ b => Request(r, h.getOrElse(Map.empty), b)
+  }
 
-  def requestLine: Parser[RequestLine] = method ~ uri ~ version
+  def requestLine: Parser[RequestLine] = method ~ uri ~ version <~ CRLF ^^ {
+    case m ~ u ~ v => RequestLine(m, u, v)
+  }
 
   def method: Parser[RequestMethod] = get | post
 
-  def get: Parser[Get] = "GET" ^^ { _ => Get }
+  def get: Parser[RequestMethod] = "GET" ^^ { _ => Get }
 
-  def post: Parser[Post] = "POST" ^^ { _ => Post }
+  def post: Parser[RequestMethod] = "POST" ^^ { _ => Post }
 
   def uri: Parser[String] = nonSpaceString
 
@@ -42,12 +44,10 @@ object HttpParser extends RegexParsers {
   def headers: Parser[Map[String, String]] = rep(header) ^^ { _.toMap }
 
   def header: Parser[(String, String)] = nonSpaceString ~ ":" ~ nonSpaceString ^^ {
-    case key ~ _ ~ value => (key, value)
+    case k ~ _ ~ v => (k, v)
   }
 
-  def body: Parser[String] =
-
-  case class RequestLine(method: RequestMethod, uri: String, version: String)
+  def body: Parser[String] = ".*".r
 }
 
 

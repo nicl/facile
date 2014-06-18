@@ -1,16 +1,7 @@
 package net.room271
 
-import java.security.cert.X509Certificate
-
 case class Request(
-  serverPort: Int,
-  serverName: String,
-  remoteAddr: String,
-  uri: String,
-  queryString: Option[String],
-  scheme: Scheme,
-  requestMethod: RequestMethod,
-  sslClientCert: Option[X509Certificate],
+  requestLine: RequestLine,
   headers: Map[String, String],
   body: Option[String])
 
@@ -32,3 +23,5 @@ case object Patch extends RequestMethod
 sealed trait Scheme
 case object Http extends Scheme
 case object Https extends Scheme
+
+case class RequestLine(method: RequestMethod, uri: String, version: String)
